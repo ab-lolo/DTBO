@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Einstieg - DTBO 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #185FA5;
+            --accent: #D85A30;
+            --success: #3B6D11;
+            --light-bg: #f8f7f5;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #fff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 2.5rem 1rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .nav {
+            background: #fff;
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            color: var(--primary);
+            background: #f5f5f5;
+        }
+
+        .nav-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .container {
+            padding: 2rem 1rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section h2 {
+            font-size: 26px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .section > p {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .card p {
+            font-size: 13px;
+            color: #666;
+            margin: 0;
+        }
+
+        .workshop-item {
+            background: #fff;
+            border-left: 5px solid var(--primary);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .workshop-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .workshop-item.level-2 {
+            border-left-color: #BA7517;
+        }
+
+        .workshop-item.level-3 {
+            border-left-color: var(--accent);
+        }
+
+        .workshop-item.level-4 {
+            border-left-color: var(--success);
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: #f0f0f0;
+        }
+
+        .level-badge.beginner {
+            background: rgba(59, 109, 17, 0.1);
+            color: var(--success);
+        }
+
+        .level-badge.intermediate {
+            background: rgba(186, 117, 23, 0.1);
+            color: #854F0B;
+        }
+
+        .level-badge.advanced {
+            background: rgba(216, 90, 48, 0.1);
+            color: var(--accent);
+        }
+
+        .level-badge.expert {
+            background: rgba(59, 109, 17, 0.1);
+            color: var(--success);
+        }
+
+        .workshop-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .workshop-meta {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: #1e2a3a;
+            color: #e0e0e0;
+            padding: 1.5rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            border: 1px solid #2d3f52;
+        }
+
+        .code-kw { color: #6f9fe0; font-weight: bold; }          /* Keywords: void, int, if */
+        .code-fn { color: #6f9fe0; }                             /* Functions: pinMode, digitalWrite */
+        .code-num { color: #f4a95d; }                            /* Numbers: 13, 1000, 255 */
+        .code-cmt { color: #7a8f99; }                            /* Comments: // text */
+        .code-param { color: #e0e0e0; }                          /* Constants: HIGH, LOW, OUTPUT */
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .expand-btn {
+            width: 100%;
+            padding: 12px;
+            background: none;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+
+        .expand-btn:hover {
+            background: rgba(24, 95, 165, 0.05);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .details {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .details.show {
+            display: block;
+        }
+
+        .details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 1rem 0 0.75rem;
+            color: #333;
+        }
+
+        .details ul,
+        .details ol {
+            margin-left: 1.5rem;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .details li {
+            margin-bottom: 0.5rem;
+        }
+
+        .details p {
+            font-size: 12px;
+            color: #999;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .quiz-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .quiz-question {
+            margin-bottom: 2rem;
+        }
+
+        .quiz-question p {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: rgba(24, 95, 165, 0.05);
+            transform: translateX(5px);
+        }
+
+        .quiz-option input {
+            margin-right: 12px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .quiz-option input:checked + span {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .result-message {
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+            display: none;
+            border-left: 4px solid transparent;
+        }
+
+        .result-message.show {
+            display: block;
+        }
+
+        .result-message.success {
+            background: rgba(59, 109, 17, 0.1);
+            color: var(--success);
+            border-left-color: var(--success);
+        }
+
+        .result-message.error {
+            background: rgba(232, 75, 74, 0.1);
+            color: #E24B4A;
+            border-left-color: #E24B4A;
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #666;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+            font-size: 13px;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        table tr:hover {
+            background: #fafafa;
+        }
+
+        footer {
+            background: #f5f5f5;
+            color: #666;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+        }
+
+        footer strong {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .nav-btn {
+                font-size: 12px;
+                padding: 0.75rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🤖 Arduino Einstieg</h1>
+        <p>Basierend auf Funduino-Tutorials</p>
+        <span class="badge">DTBO 2026 - Düsseldorfer Tage der beruflichen Orientierung</span>
+    </header>
+
+    <nav class="nav">
+        <button class="nav-btn active" onclick="switchSection('start', this)">Start</button>
+        <button class="nav-btn" onclick="switchSection('workshops', this)">Workshops</button>
+        <button class="nav-btn" onclick="switchSection('knowledge', this)">Wissen</button>
+        <button class="nav-btn" onclick="switchSection('challenge', this)">Challenge</button>
+        <button class="nav-btn" onclick="switchSection('career', this)">Karriere</button>
+    </nav>
+
+    <div class="container">
+        <!-- START SECTION -->
+        <section id="start" class="section active">
+            <h2>🤖 Was ist Arduino?</h2>
+            <p>Bevor du Code schreibst, lass uns verstehen was Arduino ist und wie es funktioniert. Klick auf die Teile des Boards!</p>
+
+            <!-- INTERACTIVE ARDUINO BOARD -->
+            <div style="background: white; border-radius: 12px; padding: 2rem; margin: 2rem 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                    <!-- Arduino Board SVG -->
+                    <div style="text-align: center;">
+                        <svg viewBox="0 0 300 400" style="max-width: 100%; height: auto; cursor: pointer;">
+                            <!-- Board Background -->
+                            <rect x="20" y="20" width="260" height="360" rx="10" fill="#0F5F3A" stroke="#333" stroke-width="2"/>
+                            
+                            <!-- USB Port (clickable) -->
+                            <rect id="usb-part" x="40" y="30" width="40" height="25" rx="3" fill="#2E5C3E" stroke="#FFB300" stroke-width="3" style="cursor: pointer; transition: all 0.3s;"/>
+                            <text x="60" y="50" font-size="10" text-anchor="middle" fill="#FFB300" font-weight="bold" style="pointer-events: none;">USB</text>
+
+                            <!-- Main Chip (clickable) -->
+                            <rect id="chip-part" x="100" y="60" width="50" height="50" rx="2" fill="#333" stroke="#FF6B35" stroke-width="3" style="cursor: pointer; transition: all 0.3s;"/>
+                            <text x="125" y="92" font-size="9" text-anchor="middle" fill="#FF6B35" font-weight="bold" style="pointer-events: none;">CPU</text>
+
+                            <!-- Digital Pins (clickable) -->
+                            <g id="digital-pins" style="cursor: pointer;">
+                                <circle cx="50" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="80" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="110" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="140" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="170" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="200" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="230" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <circle cx="260" cy="200" r="8" fill="#3B6D11" stroke="#00C853" stroke-width="2"/>
+                                <text x="150" y="230" font-size="11" text-anchor="middle" fill="#00C853" font-weight="bold" style="pointer-events: none;">DIGITAL PINS (0-13)</text>
+                            </g>
+
+                            <!-- Analog Pins (clickable) -->
+                            <g id="analog-pins" style="cursor: pointer;">
+                                <circle cx="50" cy="300" r="8" fill="#1565C0" stroke="#00B4FF" stroke-width="2"/>
+                                <circle cx="80" cy="300" r="8" fill="#1565C0" stroke="#00B4FF" stroke-width="2"/>
+                                <circle cx="110" cy="300" r="8" fill="#1565C0" stroke="#00B4FF" stroke-width="2"/>
+                                <circle cx="140" cy="300" r="8" fill="#1565C0" stroke="#00B4FF" stroke-width="2"/>
+                                <circle cx="170" cy="300" r="8" fill="#1565C0" stroke="#00B4FF" stroke-width="2"/>
+                                <circle cx="200" cy="300" r="8" fill="#1565C0" stroke="#00B4FF" stroke-width="2"/>
+                                <text x="150" y="330" font-size="11" text-anchor="middle" fill="#00B4FF" font-weight="bold" style="pointer-events: none;">ANALOG PINS (A0-A5)</text>
+                            </g>
+
+                            <!-- Power & GND (clickable) -->
+                            <rect id="power-part" x="40" y="360" width="70" height="18" rx="3" fill="#D85A30" stroke="#FF6B35" stroke-width="2" style="cursor: pointer;"/>
+                            <text x="75" y="372" font-size="9" text-anchor="middle" fill="white" font-weight="bold" style="pointer-events: none;">5V & GND</text>
+
+                            <!-- Built-in LED (clickable) -->
+                            <circle id="led-part" cx="250" cy="120" r="6" fill="#FF0000" stroke="#FFB300" stroke-width="2" style="cursor: pointer; filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.5));"/>
+                            <text x="250" y="145" font-size="9" text-anchor="middle" fill="#FFB300" font-weight="bold" style="pointer-events: none;">LED</text>
+                            <text x="250" y="158" font-size="8" text-anchor="middle" fill="#FFB300" style="pointer-events: none;">(Pin 13)</text>
+                        </svg>
+                    </div>
+
+                    <!-- Info Panel -->
+                    <div>
+                        <h3 style="font-size: 18px; color: var(--primary); margin-bottom: 1rem;">👈 Klick auf ein Teil!</h3>
+                        <div id="info-panel" style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--primary); min-height: 200px;">
+                            <p style="color: #666; font-size: 14px; margin: 0;">
+                                <strong style="color: #333;">Arduino UNO</strong><br><br>
+                                Ein Mini-Computer mit Pins um LEDs, Motoren und Sensoren zu steuern. Über USB verbindest du ihn mit deinem PC und programmierst ihn mit Code.
+                                <br><br>
+                                👉 <strong>Klick auf ein Teil des Boards oben, um mehr zu erfahren!</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETUP() und LOOP() ERKLÄRUNG -->
+            <h3 style="font-size: 18px; margin: 2rem 0 1rem; color: var(--primary);">⚙️ setup() - Läuft EINMAL am Anfang</h3>
+            <div style="background: rgba(24, 95, 165, 0.05); border-left: 4px solid var(--primary); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <p style="font-size: 14px; color: #333; margin-top: 0;"><strong>Wenn der Arduino startet, läuft setup() genau EINMAL!</strong></p>
+                <p style="font-size: 13px; color: #666;">Hier sagst du dem Arduino:</p>
+                <ul style="font-size: 13px; color: #666; margin: 0.5rem 0;">
+                    <li>Welche Pins sind Eingänge (INPUT) und welche sind Ausgänge (OUTPUT)?</li>
+                    <li>Starte Sensoren und Verbindungen</li>
+                    <li>Setze Start-Werte</li>
+                </ul>
+                <div class="code-block" style="margin-top: 1rem;">
+<span class="code-kw">void</span> <span class="code-fn">setup</span>() {
+  <span class="code-fn">pinMode</span>(<span class="code-num">13</span>, OUTPUT);
+  <span class="code-fn">Serial</span>.<span class="code-fn">begin</span>(<span class="code-num">9600</span>);
+}
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin: 2rem 0 1rem; color: var(--primary);">🔄 loop() - Läuft ENDLOS</h3>
+            <div style="background: rgba(216, 90, 48, 0.05); border-left: 4px solid var(--accent); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <p style="font-size: 14px; color: #333; margin-top: 0;"><strong>Nach setup() läuft loop() TAUSENDE MAL PRO SEKUNDE - bis du den Arduino ausschaltest!</strong></p>
+                <p style="font-size: 13px; color: #666;">Hier passiert die Aktion:</p>
+                <ul style="font-size: 13px; color: #666; margin: 0.5rem 0;">
+                    <li>Lese Sensoren aus</li>
+                    <li>Treffe Entscheidungen (if/else)</li>
+                    <li>Steuere Ausgänge (LEDs, Motoren)</li>
+                    <li>Dann springt Arduino zurück zu Anfang von loop()</li>
+                </ul>
+                <div class="code-block" style="margin-top: 1rem;">
+<span class="code-kw">void</span> <span class="code-fn">loop</span>() {
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, HIGH);
+  <span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+}
+                </div>
+            </div>
+
+            <div style="background: rgba(59, 109, 17, 0.1); border-left: 4px solid var(--success); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <strong style="color: var(--success); display: block; margin-bottom: 0.75rem;">💡 Das Geheimnis verstehen:</strong>
+                <p style="font-size: 13px; color: #666; margin: 0;">
+                    <strong>setup()</strong> = "Hallo Arduino, hier sind deine Anweisungen!" (läuft 1x)<br>
+                    <strong>loop()</strong> = "Mach das immer wieder!" (läuft 1000x+ pro Sekunde)<br>
+                    <br>
+                    Der Arduino führt diese zwei Funktionen IMMER so aus - egal ob dein Code 10 Zeilen oder 1000 Zeilen hat!
+                </p>
+            </div>
+
+            <script>
+                const infoPanels = {
+                    'usb-part': {
+                        title: '🖥️ USB-Port',
+                        text: 'Hier verbindest du den Arduino mit deinem PC über ein USB-Kabel. Der USB-Port macht zwei Sachen: Er programmiert den Arduino UND versorgt ihn mit Strom!'
+                    },
+                    'chip-part': {
+                        title: '🧠 Hauptchip (ATmega328P)',
+                        text: 'Das ist das Gehirn deines Arduino! Ein winziger Computer, der deinen Code ausführt und die Pins steuert. Super cool: Der ganze Chip kostet nur ein paar Euro!'
+                    },
+                    'digital-pins': {
+                        title: '⚡ Digitale Pins (0-13)',
+                        text: 'Das sind deine Aus- und Eingänge! Mit pinMode() sagst du: Ist dieser Pin INPUT oder OUTPUT? Mit digitalWrite() machst du ihn an (HIGH = 5V) oder aus (LOW = 0V). Pin 13 hat die eingebaute LED!'
+                    },
+                    'analog-pins': {
+                        title: '📊 Analoge Pins (A0-A5)',
+                        text: 'Diese Pins lesen Sensoren aus! Sie können Werte von 0-1023 auslesen. Perfekt für: Lichtsensoren, Temperatursensoren, Joysticks, Potentiometer und vieles mehr!'
+                    },
+                    'power-part': {
+                        title: '⚡ 5V & GND (Masse)',
+                        text: 'Das ist deine Stromquelle! 5V = Positiv, GND = Negativ. Alle elektronischen Schaltungen brauchen diese zwei Anschlüsse um zu funktionieren. GND ist SUPER wichtig - vergiss nicht, es zu verbinden!'
+                    },
+                    'led-part': {
+                        title: '🔴 Built-in LED (Pin 13)',
+                        text: 'Eine kleine LED ist DIREKT auf dem Arduino eingebaut! Perfekt für dein erstes Projekt - du brauchst KEINE zusätzliche Elektronik. Nur digitalWrite(13, HIGH) und sie blinkt!'
+                    }
+                };
+
+                function updateInfo(key) {
+                    const info = infoPanels[key];
+                    const panel = document.getElementById('info-panel');
+                    panel.innerHTML = `<strong style="color: var(--primary); font-size: 16px;">${info.title}</strong><p style="color: #666; font-size: 14px; margin-top: 1rem; margin-bottom: 0;">${info.text}</p>`;
+                }
+
+                // Add click listeners to SVG parts
+                Object.keys(infoPanels).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.addEventListener('click', () => updateInfo(key));
+                        element.style.transition = 'all 0.3s';
+                        element.style.cursor = 'pointer';
+                        element.addEventListener('mouseenter', () => {
+                            element.style.filter = 'brightness(1.2)';
+                            element.style.transform = 'scale(1.1)';
+                        });
+                        element.addEventListener('mouseleave', () => {
+                            element.style.filter = 'brightness(1)';
+                            element.style.transform = 'scale(1)';
+                        });
+                    }
+                });
+
+                // Add click listeners to the SVG container for group elements
+                const svg = document.querySelector('svg');
+                if (svg) {
+                    svg.addEventListener('click', (e) => {
+                        const target = e.target.closest('[id]');
+                        if (target && infoPanels[target.id]) {
+                            updateInfo(target.id);
+                        }
+                    });
+                }
+            </script>
+        </section>
+
+        <!-- WORKSHOPS SECTION -->
+        <section id="workshops" class="section">
+            <h2>Arduino Workshops</h2>
+            <p>Folge den Workshops in der angegebenen Reihenfolge. Jeder Workshop baut auf dem vorherigen auf. Bring Arduino und einen Computer mit USB-Kabel mit!</p>
+
+            <!-- Workshop 1: BLINKENDE LED -->
+            <div class="workshop-item">
+                <div class="workshop-title">🟢 Workshop 1: Blinkende LED</div>
+                <div class="workshop-meta">⏱️ 15 min | 🔌 Hardware: Arduino UNO, 1x LED, 1x Widerstand (220Ω)</div>
+                <p>Die klassische erste LED! Hier lernst du die drei wichtigsten Arduino-Befehle: pinMode(), digitalWrite() und delay(). Diese drei sind der Anfang von ALLEM!</p>
+
+                <button class="expand-btn" onclick="toggleDetails(this)">Code & Hilfe anschauen</button>
+                <div class="details">
+                    <h4>📚 Das lernst du hier:</h4>
+                    <ul>
+                        <li><strong>pinMode():</strong> Sagt dem Arduino „dieser Pin ist ein OUTPUT (Ausgang)"</li>
+                        <li><strong>digitalWrite():</strong> Schaltet einen Pin an (HIGH = 5V) oder aus (LOW = 0V)</li>
+                        <li><strong>delay():</strong> Der Arduino wartet für x Millisekunden (1000ms = 1 Sekunde)</li>
+                        <li><strong>setup():</strong> Diese Funktion läuft EINMAL am Anfang</li>
+                        <li><strong>loop():</strong> Diese Funktion läuft ENDLOS immer wieder und wieder</li>
+                    </ul>
+
+                    <h4>💡 Schritt-für-Schritt Anleitung:</h4>
+                    <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                        <strong style="display: block; margin-bottom: 1rem;">So baust du die Elektronik:</strong>
+                        <p style="font-size: 13px; margin: 0.5rem 0;">1. Steck den langen Bein der LED in Pin 13 des Arduino</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;">2. Steck den Widerstand (220Ω) an den kurzen Bein der LED</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;">3. Steck das andere Ende des Widerstands in GND des Arduino</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>Tipp:</strong> Pin 13 hat bereits eine LED eingebaut – du kannst auch ohne externe Elektronik testen!</p>
+                    </div>
+
+                    <h4>💻 Der Code:</h4>
+                    <div class="code-block"><span class="code-kw">void</span> <span class="code-fn">setup</span>() {
+  <span class="code-fn">pinMode</span>(<span class="code-num">13</span>, OUTPUT);
+}
+
+<span class="code-kw">void</span> <span class="code-fn">loop</span>() {
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, HIGH);
+  <span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+}</div>
+
+                    <h4>🔍 Das Geheimnis verstehen:</h4>
+                    <p>Stell dir vor, die LED ist eine Lampe in deinem Zimmer:<br>
+                    <br>
+                    <strong>Der Arduino macht:</strong><br>
+                    1. Licht AN → 1 Sekunde warten (Licht leuchtet)<br>
+                    2. Licht AUS → 1 Sekunde warten (Licht ist dunkel)<br>
+                    3. Zurück zu Punkt 1<br>
+                    <br>
+                    Das wiederholt sich endlos, solange der Arduino Strom hat!</p>
+
+                    <h4>⭐ STRETCH AUFGABE (für die Schnellen!):</h4>
+                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFB300; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
+                        <strong style="color: #854F0B; font-size: 14px;">🚨 Mach eine LED, die blinkt wie eine Alarm-Sirene!</strong>
+                        <p style="font-size: 13px; color: #555; margin: 0.75rem 0;">Ändere deinen Code so, dass:</p>
+                        <ul style="font-size: 13px; color: #555; margin: 0.5rem 0;">
+                            <li>Die LED schnell blinkt wenn sie leuchtet (100ms an, 100ms aus)</li>
+                            <li>Danach langsam blinkt (500ms an, 500ms aus)</li>
+                            <li>Dann das Muster wiederholt</li>
+                        </ul>
+                        <div class="code-block" style="margin-top: 0.75rem; font-size: 12px;"><span class="code-kw">for</span> (<span class="code-kw">int</span> i = <span class="code-num">0</span>; i < <span class="code-num">5</span>; i++) {
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, HIGH);
+  <span class="code-fn">delay</span>(<span class="code-num">100</span>);
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">100</span>);
+}
+
+<span class="code-kw">for</span> (<span class="code-kw">int</span> i = <span class="code-num">0</span>; i < <span class="code-num">3</span>; i++) {
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, HIGH);
+  <span class="code-fn">delay</span>(<span class="code-num">500</span>);
+  <span class="code-fn">digitalWrite</span>(<span class="code-num">13</span>, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">500</span>);
+}</div>
+                        <p style="font-size: 12px; color: #555; margin-top: 0.75rem;"><strong>Tipp:</strong> Das Wort „for" ist eine Schleife. Sie wiederholt etwas mehrmals!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workshop 2: WECHSELBLINKER -->
+            <div class="workshop-item">
+                <div class="workshop-title">🟡 Workshop 2: Wechselblinker (2 LEDs)</div>
+                <div class="workshop-meta">⏱️ 25 min | 🔌 Hardware: 2x LED, 2x Widerstand (220Ω), Breadboard, Jumper-Kabel</div>
+                <p>Jetzt wird's interessant! Zwei LEDs, die abwechselnd blinken – wie ein echtes Warnlicht an Bahnübergängen oder Baustellen. Du steuerst jetzt zwei Pins gleichzeitig!</p>
+
+                <button class="expand-btn" onclick="toggleDetails(this)">Code & Hilfe anschauen</button>
+                <div class="details">
+                    <h4>📚 Das lernst du hier:</h4>
+                    <ul>
+                        <li><strong>Mehrere Pins:</strong> Wir nutzen Pin 5 UND Pin 7 gleichzeitig</li>
+                        <li><strong>Sequenzen:</strong> Eine LED an, dann die andere – wie eine Choreografie</li>
+                        <li><strong>Breadboard:</strong> Schaltungen übersichtlich aufbauen</li>
+                        <li><strong>Logisches Denken:</strong> Welche LED wann anschalten?</li>
+                    </ul>
+
+                    <h4>💡 Schritt-für-Schritt Anleitung:</h4>
+                    <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                        <strong style="display: block; margin-bottom: 1rem;">So baust du die Elektronik auf dem Breadboard:</strong>
+                        <p style="font-size: 13px; margin: 0.5rem 0;">1. <strong>LED 1 (z.B. Rot):</strong> Pin 5 → Widerstand (220Ω) → LED (langes Bein) → GND</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;">2. <strong>LED 2 (z.B. Gelb):</strong> Pin 7 → Widerstand (220Ω) → LED (langes Bein) → GND</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;">3. <strong>Wichtig:</strong> Die kurzen Beine der LEDs gehen IMMER zu GND (Masse)</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>Tipp:</strong> Zeichne dir die Schaltung erst auf Papier auf, bevor du anfängst!</p>
+                    </div>
+
+                    <h4>💻 Der Code:</h4>
+                    <div class="code-block"><span class="code-kw">int</span> LED_ROT = <span class="code-num">5</span>;
+<span class="code-kw">int</span> LED_GELB = <span class="code-num">7</span>;
+
+<span class="code-kw">void</span> <span class="code-fn">setup</span>() {
+  <span class="code-fn">pinMode</span>(LED_ROT, OUTPUT);
+  <span class="code-fn">pinMode</span>(LED_GELB, OUTPUT);
+}
+
+<span class="code-kw">void</span> <span class="code-fn">loop</span>() {
+  <span class="code-fn">digitalWrite</span>(LED_ROT, HIGH);
+  <span class="code-fn">digitalWrite</span>(LED_GELB, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+  <span class="code-fn">digitalWrite</span>(LED_ROT, LOW);
+  <span class="code-fn">digitalWrite</span>(LED_GELB, HIGH);
+  <span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+}</div>
+
+                    <h4>🔍 Wie das Wechselblinking funktioniert:</h4>
+                    <p><strong>Der Arduino macht folgendes:</strong><br>
+                    1. ROT an, GELB aus → 1 Sekunde warten<br>
+                    2. ROT aus, GELB an → 1 Sekunde warten<br>
+                    3. Zurück zu Punkt 1<br>
+                    <br>
+                    <strong>Das sieht aus wie:</strong> 🔴 (1s) → 🟡 (1s) → 🔴 (1s) → 🟡 (1s) → ...<br>
+                    <br>
+                    So funkionieren echte Warnlichter an Bahnübergängen oder Baustellen!</p>
+
+                    <h4>⭐ STRETCH AUFGABE (für die Schnellen!):</h4>
+                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFB300; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
+                        <strong style="color: #854F0B; font-size: 14px;">🚦 Mach eine echte Ampel mit 3 LEDs!</strong>
+                        <p style="font-size: 13px; color: #555; margin: 0.75rem 0;">Füge eine grüne LED hinzu und programmiere eine realistische Ampel-Sequenz:</p>
+                        <ul style="font-size: 13px; color: #555; margin: 0.5rem 0;">
+                            <li>ROT allein: 3 Sekunden</li>
+                            <li>ROT + GELB: 1 Sekunde (Vorbereitung)</li>
+                            <li>GRÜN allein: 3 Sekunden</li>
+                            <li>GELB allein: 1 Sekunde (Warnung)</li>
+                            <li>Dann wieder von vorne!</li>
+                        </ul>
+                        <div class="code-block" style="margin-top: 0.75rem; font-size: 12px;"><span class="code-fn">digitalWrite</span>(LED_ROT, HIGH);
+<span class="code-fn">digitalWrite</span>(LED_GELB, LOW);
+<span class="code-fn">digitalWrite</span>(LED_GRUEN, LOW);
+<span class="code-fn">delay</span>(<span class="code-num">3000</span>);
+
+<span class="code-fn">digitalWrite</span>(LED_ROT, HIGH);
+<span class="code-fn">digitalWrite</span>(LED_GELB, HIGH);
+<span class="code-fn">digitalWrite</span>(LED_GRUEN, LOW);
+<span class="code-fn">delay</span>(<span class="code-num">1000</span>);</div>
+                        <p style="font-size: 12px; color: #555; margin-top: 0.75rem;"><strong>Tipp:</strong> Schreib dir vorher auf Papier auf, welche LED in welcher Phase an/aus ist. Dann wird der Code viel einfacher!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workshop 3: PWM / PULSIERENDE LED -->
+            <div class="workshop-item">
+                <div class="workshop-title">🔵 Workshop 3: Pulsierende LED (PWM – Der Atemeffekt)</div>
+                <div class="workshop-meta">⏱️ 30 min | 🔌 Hardware: 1x LED, 1x Widerstand (220Ω), 1x PWM-Pin (3,5,6,9,10 oder 11)</div>
+                <p>Cool-Level: EXTREM! Die LED wird dunkel → hell → dunkel → hell... wie eine atmende Lampe oder ein Herzschlag. Das heißt PWM und ist total fortgeschritten!</p>
+
+                <button class="expand-btn" onclick="toggleDetails(this)">Code & Hilfe anschauen</button>
+                <div class="details">
+                    <h4>📚 Das lernst du hier:</h4>
+                    <ul>
+                        <li><strong>analogWrite():</strong> Nicht nur an/aus, sondern 256 verschiedene Helligkeitsstufen!</li>
+                        <li><strong>PWM-Pins:</strong> Nur die mit ~ Symbol funktionieren (3, 5, 6, 9, 10, 11)</li>
+                        <li><strong>Variablen:</strong> Zahlen speichern und verändern</li>
+                        <li><strong>If-Bedingungen:</strong> Wenn... dann... Logik</li>
+                        <li><strong>Das Geheimnis von PWM:</strong> Es blinkt so schnell, dass wir nur Helligkeit sehen!</li>
+                    </ul>
+
+                    <h4>💡 Das Geheimnis von PWM (ganz wichtig!):</h4>
+                    <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #1976d2;">
+                        <strong style="display: block; margin-bottom: 0.75rem; color: #1565c0;">Wie PWM WIRKLICH funktioniert:</strong>
+                        <p style="font-size: 13px; color: #555; margin: 0;">analogWrite(pin, 255) = LED ist IMMER an (volle Helligkeit)</p>
+                        <p style="font-size: 13px; color: #555; margin: 0;">analogWrite(pin, 128) = LED ist die HÄLFTE der Zeit an (halb so hell)</p>
+                        <p style="font-size: 13px; color: #555; margin: 0;">analogWrite(pin, 64) = LED ist 1/4 der Zeit an (dunkel)</p>
+                        <p style="font-size: 13px; color: #555; margin: 0.75rem 0;">Es ist wie eine unsichtbar schnelle Blinkfrequenz! Der Arduino schaltet die LED hunderte Male pro Sekunde an und aus. Unsere Augen sehen das als kontinuierliches Licht mit verschiedener Helligkeit.</p>
+                    </div>
+
+                    <h4>💻 Der Code:</h4>
+                    <div class="code-block"><span class="code-kw">int</span> LED = <span class="code-num">6</span>;
+<span class="code-kw">int</span> Helligkeit = <span class="code-num">0</span>;
+<span class="code-kw">int</span> Schritte = <span class="code-num">5</span>;
+
+<span class="code-kw">void</span> <span class="code-fn">setup</span>() {
+  <span class="code-fn">pinMode</span>(LED, OUTPUT);
+}
+
+<span class="code-kw">void</span> <span class="code-fn">loop</span>() {
+  <span class="code-fn">analogWrite</span>(LED, Helligkeit);
+  <span class="code-fn">delay</span>(<span class="code-num">30</span>);
+  Helligkeit = Helligkeit + Schritte;
+  <span class="code-kw">if</span> (Helligkeit == <span class="code-num">0</span> || Helligkeit == <span class="code-num">255</span>) {
+    Schritte = -Schritte;
+  }
+}</div>
+
+                    <h4>🔍 Schritt-für-Schritt verstehen:</h4>
+                    <p><strong>Durchlauf 1:</strong> Helligkeit = 0 → analogWrite(6, 0) → LED aus → Helligkeit = 0+5 = 5<br>
+                    <strong>Durchlauf 2:</strong> Helligkeit = 5 → analogWrite(6, 5) → LED ganz dunkel → Helligkeit = 5+5 = 10<br>
+                    <strong>Durchlauf 3:</strong> Helligkeit = 10 → analogWrite(6, 10) → LED dunkel → Helligkeit = 10+5 = 15<br>
+                    ... (wiederholt sich bis 255)<br>
+                    <strong>Bei 255:</strong> Schritte wird = -5 (Richtung ändert sich!)<br>
+                    <strong>Durchlauf X:</strong> Helligkeit = 255 → analogWrite(6, 255) → LED hell → Helligkeit = 255-5 = 250<br>
+                    ... (wiederholt sich bis 0)<br>
+                    <strong>Bei 0:</strong> Schritte wird wieder = +5 (alles von vorne!)</p>
+
+                    <h4>⭐ STRETCH AUFGABE (für die Schnellen!):</h4>
+                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFB300; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
+                        <strong style="color: #854F0B; font-size: 14px;">💓 Mach einen echten Herzschlag-Effekt!</strong>
+                        <p style="font-size: 13px; color: #555; margin: 0.75rem 0;">Ändere die Geschwindigkeit und Größe der Pulse, um einen Herzschlag zu simulieren:</p>
+                        <div class="code-block" style="margin-top: 0.75rem; font-size: 12px;"><span class="code-kw">int</span> Schritte = <span class="code-num">2</span>;
+<span class="code-kw">int</span> Schritte = <span class="code-num">10</span>;</div>
+                        <p style="font-size: 12px; color: #555; margin-top: 0.75rem;"><strong>Super-Bonus:</strong> Wie schnell schlägt dein Herz? Google es! Dann rechne es in die delay() um!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workshop 4: AMPELSCHALTUNG -->
+            <div class="workshop-item">
+                <div class="workshop-title">🚦 Workshop 4: Ampelschaltung (Die Meisteraufgabe!)</div>
+                <div class="workshop-meta">⏱️ 40 min | 🔌 Hardware: 3x LED (rot, gelb, grün), 3x Widerstand (220Ω), Breadboard, Jumper-Kabel</div>
+                <p>Das ist ECHTERWELT-Arduino! Eine echte Ampel mit realistischen Timings. Das ist das Projekt, das du deinen Freunden zeigen kannst – es sieht professionell aus!</p>
+
+                <button class="expand-btn" onclick="toggleDetails(this)">Code & Hilfe anschauen</button>
+                <div class="details">
+                    <h4>📚 Das lernst du hier:</h4>
+                    <ul>
+                        <li><strong>Drei Pins koordinieren:</strong> Alle 3 LEDs müssen perfekt zusammenpassen</li>
+                        <li><strong>Realistische Timings:</strong> Rote Ampeln dauern länger (Verkehr!)</li>
+                        <li><strong>State Machine:</strong> Der Ampel-Zustand wechselt zwischen 4 Phasen</li>
+                        <li><strong>Real-World-Anwendung:</strong> Das ist echte Verkehrstechnik!</li>
+                    </ul>
+
+                    <h4>💡 Schritt-für-Schritt Anleitung:</h4>
+                    <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                        <strong style="display: block; margin-bottom: 1rem;">So baust du die Elektronik:</strong>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>LED 1 (ROT):</strong> Pin 12 → Widerstand 220Ω → LED (langes Bein) → GND</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>LED 2 (GELB):</strong> Pin 11 → Widerstand 220Ω → LED (langes Bein) → GND</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>LED 3 (GRÜN):</strong> Pin 10 → Widerstand 220Ω → LED (langes Bein) → GND</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>Wichtig:</strong> Alle kurzen Beine gehen zu GND!</p>
+                        <p style="font-size: 13px; margin: 0.5rem 0;"><strong>Tipp:</strong> Baue es ordentlich auf! Diese Ampel ist dein Meisterwerk!</p>
+                    </div>
+
+                    <h4>💻 Der Code:</h4>
+                    <div class="code-block"><span class="code-kw">int</span> LED_ROT = <span class="code-num">12</span>;
+<span class="code-kw">int</span> LED_GELB = <span class="code-num">11</span>;
+<span class="code-kw">int</span> LED_GRUEN = <span class="code-num">10</span>;
+
+<span class="code-kw">void</span> <span class="code-fn">setup</span>() {
+  <span class="code-fn">pinMode</span>(LED_ROT, OUTPUT);
+  <span class="code-fn">pinMode</span>(LED_GELB, OUTPUT);
+  <span class="code-fn">pinMode</span>(LED_GRUEN, OUTPUT);
+}
+
+<span class="code-kw">void</span> <span class="code-fn">loop</span>() {
+  <span class="code-fn">digitalWrite</span>(LED_ROT, HIGH);
+  <span class="code-fn">digitalWrite</span>(LED_GELB, LOW);
+  <span class="code-fn">digitalWrite</span>(LED_GRUEN, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">25000</span>);
+  <span class="code-fn">digitalWrite</span>(LED_ROT, HIGH);
+  <span class="code-fn">digitalWrite</span>(LED_GELB, HIGH);
+  <span class="code-fn">digitalWrite</span>(LED_GRUEN, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">5000</span>);
+  <span class="code-fn">digitalWrite</span>(LED_ROT, LOW);
+  <span class="code-fn">digitalWrite</span>(LED_GELB, LOW);
+  <span class="code-fn">digitalWrite</span>(LED_GRUEN, HIGH);
+  <span class="code-fn">delay</span>(<span class="code-num">25000</span>);
+  <span class="code-fn">digitalWrite</span>(LED_ROT, LOW);
+  <span class="code-fn">digitalWrite</span>(LED_GELB, HIGH);
+  <span class="code-fn">digitalWrite</span>(LED_GRUEN, LOW);
+  <span class="code-fn">delay</span>(<span class="code-num">5000</span>);
+}</div>
+
+                    <h4>🔍 Wie echte Ampeln funktionieren:</h4>
+                    <p><strong>Diese Phasen sind nicht zufällig!</strong><br>
+                    <br>
+                    <strong>ROT (25s):</strong> Der längste Phase, weil viel Verkehr in die andere Richtung kommt<br>
+                    <strong>ROT+GELB (5s):</strong> Vorbereitung – Fahrer merken: „Gleich bin ich dran"<br>
+                    <strong>GRÜN (25s):</strong> Gleich lange wie ROT – fair für beide Richtungen<br>
+                    <strong>GELB (5s):</strong> Warnung – Fahrer bremsen sanft<br>
+                    <br>
+                    Wenn du auf der Straße eine Ampel siehst, passiert genau dieser Code! (Echte Ampeln sind komplizierter mit Sensoren und intelligenter Logik, aber die Basis ist genau hier!)</p>
+
+                    <h4>⭐ STRETCH AUFGABE (für die Schnellen!):</h4>
+                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFB300; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
+                        <strong style="color: #854F0B; font-size: 14px;">🔊 Mach eine Fußgänger-Ampel mit Sound!</strong>
+                        <p style="font-size: 13px; color: #555; margin: 0.75rem 0;">Wenn GRÜN ist, soll der Arduino piepen (mit einem Buzzer/Speaker an Pin 8):</p>
+                        <div class="code-block" style="margin-top: 0.75rem; font-size: 12px;"><span class="code-fn">digitalWrite</span>(LED_GRUEN, HIGH);
+<span class="code-fn">delay</span>(<span class="code-num">1000</span>);
+
+<span class="code-kw">for</span> (<span class="code-kw">int</span> i = <span class="code-num">0</span>; i < <span class="code-num">15</span>; i++) {
+  <span class="code-fn">tone</span>(<span class="code-num">8</span>, <span class="code-num">1000</span>);
+  <span class="code-fn">delay</span>(<span class="code-num">200</span>);
+  <span class="code-fn">noTone</span>(<span class="code-num">8</span>);
+  <span class="code-fn">delay</span>(<span class="code-num">100</span>);
+}
+
+<span class="code-fn">delay</span>(<span class="code-num">24000</span>);</div>
+                        <p style="font-size: 12px; color: #555; margin-top: 0.75rem;"><strong>Super-Bonus:</strong> Versuch, die Piepse schneller zu machen wenn die Zeit abläuft (Countdown-Effekt wie echte Ampeln!).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- KNOWLEDGE SECTION -->
+        <section id="knowledge" class="section">
+            <h2>Arduino Grundwissen</h2>
+
+            <div class="info-box">
+                <strong>💡 Was ist Arduino?</strong><br>
+                Arduino ist eine Plattform mit einfacher Hardware und Software. Mit einem Arduino-Board kannst du elektronische Projekte steuern – von LEDs bis zu Robotern. Es ist perfekt zum Lernen, weil die Syntax einfach ist und es tolle Community-Ressourcen gibt.
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 18px; color: var(--primary);">📌 Digitale vs. Analoge Pins</h3>
+            <table>
+                <tr>
+                    <th>Pin-Typ</th>
+                    <th>Pins</th>
+                    <th>Verwendung</th>
+                </tr>
+                <tr>
+                    <td><strong>Digitale Pins</strong></td>
+                    <td>0-13</td>
+                    <td>HIGH (5V) oder LOW (0V) – für LEDs, Motoren, Relais</td>
+                </tr>
+                <tr>
+                    <td><strong>PWM-Pins (mit ~)</strong></td>
+                    <td>3, 5, 6, 9, 10, 11</td>
+                    <td>analogWrite() für Helligkeitssteuerung (0-255)</td>
+                </tr>
+                <tr>
+                    <td><strong>Analoge Pins</strong></td>
+                    <td>A0-A5</td>
+                    <td>analogRead() zum Auslesen von Sensoren (0-1023)</td>
+                </tr>
+            </table>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 18px; color: var(--primary);">⚙️ Wichtigste Arduino-Befehle</h3>
+            <table>
+                <tr>
+                    <th>Befehl</th>
+                    <th>Parameter</th>
+                    <th>Beispiel</th>
+                </tr>
+                <tr>
+                    <td><code>pinMode()</code></td>
+                    <td>pin, INPUT/OUTPUT</td>
+                    <td>pinMode(13, OUTPUT);</td>
+                </tr>
+                <tr>
+                    <td><code>digitalWrite()</code></td>
+                    <td>pin, HIGH/LOW</td>
+                    <td>digitalWrite(13, HIGH);</td>
+                </tr>
+                <tr>
+                    <td><code>analogWrite()</code></td>
+                    <td>pin, 0-255</td>
+                    <td>analogWrite(6, 128);</td>
+                </tr>
+                <tr>
+                    <td><code>delay()</code></td>
+                    <td>milliseconds</td>
+                    <td>delay(1000); // 1 Sekunde</td>
+                </tr>
+                <tr>
+                    <td><code>digitalRead()</code></td>
+                    <td>pin</td>
+                    <td>int status = digitalRead(2);</td>
+                </tr>
+                <tr>
+                    <td><code>analogRead()</code></td>
+                    <td>pin A0-A5</td>
+                    <td>int value = analogRead(A0);</td>
+                </tr>
+            </table>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 18px; color: var(--primary);">🔌 Widerstand für LEDs – WICHTIG!</h3>
+            <div class="info-box">
+                <strong>Warum brauchst du einen Vorwiderstand?</strong><br>
+                LEDs brauchen nur 2-3V und wenig Strom. Arduino gibt aber 5V aus. Ohne Widerstand: LED wird zu hell und kaputt! Mit 220Ω Widerstand: LED leuchtet schön und hält lange.
+                <br><br>
+                <strong>Schaltung:</strong> Arduino Pin → Widerstand (220Ω) → LED (lange Bein zu Pin, kurzes Bein zu GND) → GND
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 18px; color: var(--primary);">💻 Programmstruktur</h3>
+            <div class="code-block">// 1. Setup - läuft EINMAL am Anfang
+void setup() {
+  pinMode(13, OUTPUT);  // Pin initialisieren
+  Serial.begin(9600);   // Kommunikation starten
+}
+
+// 2. Loop - läuft ENDLOS immer wieder
+void loop() {
+  // Dein Code hier
+  digitalWrite(13, HIGH);
+  delay(1000);
+  digitalWrite(13, LOW);
+  delay(1000);
+}</div>
+        </section>
+
+        <!-- CHALLENGE SECTION -->
+        <section id="challenge" class="section">
+            <h2>Arduino Challenge</h2>
+            <p>Teste dein Wissen über alle vier Workshops! Beantworte alle Fragen richtig.</p>
+
+            <div class="quiz-container">
+                <div class="quiz-question">
+                    <p>1️⃣ Mit welchem Befehl machst du eine LED blinken?</p>
+                    <label class="quiz-option">
+                        <input type="radio" name="q1" value="false"> <span>analogWrite()</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q1" value="true"> <span>digitalWrite() + delay()</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q1" value="false"> <span>pinMode()</span>
+                    </label>
+                </div>
+
+                <div class="quiz-question">
+                    <p>2️⃣ Welche Pins haben PWM (~)?</p>
+                    <label class="quiz-option">
+                        <input type="radio" name="q2" value="true"> <span>3, 5, 6, 9, 10, 11</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q2" value="false"> <span>A0 bis A5</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q2" value="false"> <span>Alle digitalen Pins (0-13)</span>
+                    </label>
+                </div>
+
+                <div class="quiz-question">
+                    <p>3️⃣ Warum brauchst du einen Vorwiderstand bei LEDs?</p>
+                    <label class="quiz-option">
+                        <input type="radio" name="q3" value="true"> <span>Damit die LED nicht durchbrennt</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q3" value="false"> <span>Zum schneller Blinken</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q3" value="false"> <span>Das ist optional</span>
+                    </label>
+                </div>
+
+                <div class="quiz-question">
+                    <p>4️⃣ Wie lange dauert delay(1000)?</p>
+                    <label class="quiz-option">
+                        <input type="radio" name="q4" value="true"> <span>1 Sekunde</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q4" value="false"> <span>1000 Sekunden</span>
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="q4" value="false"> <span>1 Millisekunde</span>
+                    </label>
+                </div>
+
+                <button class="btn" onclick="checkQuiz()">Quiz überprüfen</button>
+                <div id="quizResult" class="result-message"></div>
+            </div>
+        </section>
+
+        <!-- CAREER SECTION -->
+        <section id="career" class="section">
+            <h2>🚀 Deine Zukunft mit Arduino</h2>
+            <p>Arduino ist der Anfang! Tausende Schüler und Schülerinnen weltweit nutzen Arduino, um ihre Ideen zum Leben zu erwecken. An der <strong>Lore-Lorentz Schule</strong> kannst du das alles lernen!</p>
+
+            <div style="background: linear-gradient(135deg, rgba(24, 95, 165, 0.1) 0%, rgba(216, 90, 48, 0.1) 100%); border-radius: 12px; padding: 2rem; margin: 2rem 0; border-left: 5px solid var(--primary);">
+                <h3 style="font-size: 18px; margin-bottom: 1rem; color: var(--primary);">🏫 An der Lore-Lorentz Schule</h3>
+                <p style="font-size: 14px; line-height: 1.8; color: #666; margin: 0;">
+                    Die Lore-Lorentz Schule ist eine Schule mit <strong>modernem Fokus auf MINT</strong> (Mathematik, Informatik, Naturwissenschaften, Technik). 
+                    Hier kannst du Arduino im Unterricht nutzen, in AGs mit anderen experimentieren und zeigen, was dich begeistert! 
+                    Ob beim <strong>Erasmus+ Projekt</strong> mit Schulen in Europa oder in lokalen Wettbewerben – es gibt viele Möglichkeiten, 
+                    deine Fähigkeiten zu zeigen.
+                </p>
+            </div>
+
+            <h3 style="font-size: 18px; margin: 2rem 0 1rem; color: var(--primary);">💡 Was Interessiert DICH?</h3>
+
+            <div class="card-grid">
+                <div class="card" style="border: 2px solid #FF6B9D; background: rgba(255, 107, 157, 0.05);">
+                    <span class="card-icon">🎮</span>
+                    <h3 style="color: #FF6B9D;">Gaming & Spieleentwicklung</h3>
+                    <p>Arduino steuert Game-Controller, VR-Hardware und Spielmechaniken. Viele Gaming-Studios nutzen Mikrocontroller!</p>
+                </div>
+                <div class="card" style="border: 2px solid #00BFA5; background: rgba(0, 191, 165, 0.05);">
+                    <span class="card-icon">🏃</span>
+                    <h3 style="color: #00BFA5;">Sport & Fitness</h3>
+                    <p>Fitness-Tracker, Trainingsgeräte, Smart-Uhr – all das nutzt Arduino-ähnliche Technologie. Baue deine eigenen Gadgets!</p>
+                </div>
+                <div class="card" style="border: 2px solid #FFB300; background: rgba(255, 179, 0, 0.05);">
+                    <span class="card-icon">🎨</span>
+                    <h3 style="color: #FFB300;">Kreativität & Design</h3>
+                    <p>LED-Kunstinstallationen, smarte Mode, interaktive Ausstellungen – Arduino macht deine Ideen sichtbar!</p>
+                </div>
+                <div class="card" style="border: 2px solid #FF6B35; background: rgba(216, 90, 48, 0.05);">
+                    <span class="card-icon">🌍</span>
+                    <h3 style="color: #FF6B35;">Umwelt & Nachhaltigkeit</h3>
+                    <p>Umweltschutz mit Technik! Wetterstation, Wassersensor, Solar-Projekte – nutze Arduino für die Zukunft!</p>
+                </div>
+                <div class="card" style="border: 2px solid #7C3AED; background: rgba(124, 58, 237, 0.05);">
+                    <span class="card-icon">🤖</span>
+                    <h3 style="color: #7C3AED;">Robotik & Maschinen</h3>
+                    <p>Bau Roboter, Drohnen, Autos – Arduino ist die Basis für alles, das sich bewegt und denkt!</p>
+                </div>
+                <div class="card" style="border: 2px solid #00C853; background: rgba(0, 200, 83, 0.05);">
+                    <span class="card-icon">🏥</span>
+                    <h3 style="color: #00C853;">Medizin & Gesundheit</h3>
+                    <p>Medizinische Geräte, Prothesen, Überwachungssysteme – Arduino hilft Menschen gesund zu werden!</p>
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin: 2rem 0 1rem; color: var(--primary);">🎯 So könnte dein Weg aussehen:</h3>
+
+            <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 2rem; margin: 1.5rem 0;">
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px; text-align: center; padding: 1rem; background: rgba(24, 95, 165, 0.05); border-radius: 8px;">
+                        <div style="font-size: 40px; margin-bottom: 0.5rem;">1️⃣</div>
+                        <strong style="color: var(--primary); font-size: 15px;">Jetzt: Arduino Basics</strong>
+                        <p style="font-size: 12px; color: #666; margin-top: 0.5rem;">Du lernst in der 7.-9. Klasse die Grundlagen. Baue deine erste Ampel!</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; text-align: center; padding: 1rem; background: rgba(216, 90, 48, 0.05); border-radius: 8px;">
+                        <div style="font-size: 40px; margin-bottom: 0.5rem;">2️⃣</div>
+                        <strong style="color: var(--accent); font-size: 15px;">Klasse 10-12: Eigenes Projekt</strong>
+                        <p style="font-size: 12px; color: #666; margin-top: 0.5rem;">Melde dich in einer Arduino-AG oder Robotik-AG an. Baue etwas Größeres!</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; text-align: center; padding: 1rem; background: rgba(59, 109, 17, 0.05); border-radius: 8px;">
+                        <div style="font-size: 40px; margin-bottom: 0.5rem;">3️⃣</div>
+                        <strong style="color: var(--success); font-size: 15px;">Zukunft: Dein Traumberuf</strong>
+                        <p style="font-size: 12px; color: #666; margin-top: 0.5rem;">Studium, Ausbildung oder Duale Ausbildung – Arduino öffnet dir alle Türen!</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin: 2rem 0 1rem; color: var(--primary);">💼 Diese Berufe warten auf dich:</h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                    <div style="font-size: 24px; margin-bottom: 0.75rem;">⚙️</div>
+                    <h4 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Elektroingenieur/in</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        Entwickle elektronische Systeme für Autos, Handys, Maschinen – überall brauchst du Arduino-Kenntnisse!
+                    </p>
+                    <p style="font-size: 12px; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">Ausbildung: 3,5 Jahre oder Studium: 4 Jahre</p>
+                </div>
+
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                    <div style="font-size: 24px; margin-bottom: 0.75rem;">💻</div>
+                    <h4 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Softwareentwickler/in</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        Schreibe Code für alle möglichen Geräte. Von Apps bis zu Embedded Systems – dein Code läuft überall!
+                    </p>
+                    <p style="font-size: 12px; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">Ausbildung: 3 Jahre oder Studium: 3-4 Jahre</p>
+                </div>
+
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                    <div style="font-size: 24px; margin-bottom: 0.75rem;">🤖</div>
+                    <h4 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Robotiker/in</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        Baue Roboter für Fabriken, Chirurgie, Weltraum! Deine Maschinen lösen komplexe Probleme.
+                    </p>
+                    <p style="font-size: 12px; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">Studium: 4 Jahre (meist Master)</p>
+                </div>
+
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                    <div style="font-size: 24px; margin-bottom: 0.75rem;">🔧</div>
+                    <h4 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Mechatroniker/in</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        Kombination aus Mechanik, Elektronik und Programmierung. Der beliebteste Beruf für Arduino-Fans!
+                    </p>
+                    <p style="font-size: 12px; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">Ausbildung: 3,5 Jahre</p>
+                </div>
+
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                    <div style="font-size: 24px; margin-bottom: 0.75rem;">🌐</div>
+                    <h4 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.5rem;">IoT / Smart Home Entwickler/in</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        Vernetzte Geräte, Smart Home, intelligente Städte – die Zukunft ist digital und Arduino macht's möglich!
+                    </p>
+                    <p style="font-size: 12px; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">Studium oder Ausbildung: varies</p>
+                </div>
+
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                    <div style="font-size: 24px; margin-bottom: 0.75rem;">🎮</div>
+                    <h4 style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 0.5rem;">Game Developer / VR Designer</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        Baue Spiele und Virtual Reality Welten. Arduino steuert Controller und spezielle Hardware!
+                    </p>
+                    <p style="font-size: 12px; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">Studium: 3-4 Jahre</p>
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin: 2rem 0 1rem; color: var(--primary);">🎯 Los geht's – Das kannst du jetzt tun:</h3>
+
+            <div style="background: rgba(24, 95, 165, 0.05); border-left: 4px solid var(--primary); padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
+                <div style="margin-bottom: 1rem;">
+                    <strong style="font-size: 14px; color: var(--primary); display: block; margin-bottom: 0.5rem;">✅ Diese Woche:</strong>
+                    <p style="font-size: 13px; color: #666; margin: 0;">Mach den Arduino Challenge auf dieser Seite! Zeige deinen Lehrern, dass du interessiert bist.</p>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong style="font-size: 14px; color: var(--primary); display: block; margin-bottom: 0.5rem;">✅ Nächsten Monat:</strong>
+                    <p style="font-size: 13px; color: #666; margin: 0;">Trag dich in die Arduino-AG oder Robotik-AG an der Lore-Lorentz Schule ein. Frag deinen Informatik- oder Physiklehrer!</p>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong style="font-size: 14px; color: var(--primary); display: block; margin-bottom: 0.5rem;">✅ Dieses Jahr:</strong>
+                    <p style="font-size: 13px; color: #666; margin: 0;">Melde dich bei einem Wettbewerb an (z.B. Jugend forscht, Robotik-Wettbewerbe). Zeige dein Projekt der Schule und der Welt!</p>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; border-radius: 12px; padding: 2rem; text-align: center; margin: 2rem 0;">
+                <h3 style="font-size: 20px; margin-bottom: 1rem; color: white;">🌟 Die beste Zeit ist JETZT!</h3>
+                <p style="font-size: 14px; line-height: 1.8; margin-bottom: 1.5rem;">
+                    Du bist in einem perfekten Alter, um mit Arduino zu starten. Die nächsten Jahre sind entscheidend für deine Zukunft. 
+                    An der Lore-Lorentz Schule hast du alle Möglichkeiten – nutze sie!
+                </p>
+                <p style="font-size: 13px; color: rgba(255,255,255,0.9);">
+                    Es gibt tausende Jobs, die Arduino brauchen. Es ist nicht nur für „Nerds" – es ist für DICH! 🚀
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p><strong>© 2026 DTBO Arduino Einstieg</strong></p>
+        <p>Basierend auf <strong>Funduino-Tutorials</strong> | Düsseldorfer Tage der beruflichen Orientierung</p>
+        <p style="margin-top: 1rem; font-size: 11px; opacity: 0.8;">💡 Alle Codes sind für Arduino UNO optimiert. Funktionieren aber mit geringen Anpassungen auch auf anderen Boards wie Wemos D1, ESP32 und NodeMCU.</p>
+    </footer>
+
+    <script>
+        function switchSection(sectionId, btn) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            btn.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Toggle workshop details
+        function toggleDetails(btn) {
+            const details = btn.nextElementSibling;
+            details.classList.toggle('show');
+            btn.textContent = details.classList.contains('show') ? 'Code verbergen' : 'Code anschauen';
+        }
+
+        // Quiz functionality
+        function checkQuiz() {
+            const answers = {
+                q1: 'true',
+                q2: 'true',
+                q3: 'true',
+                q4: 'true'
+            };
+
+            let correct = 0;
+            let answered = 0;
+
+            for (let q in answers) {
+                const selected = document.querySelector(`input[name="${q}"]:checked`);
+                if (selected) {
+                    answered++;
+                    const label = selected.closest('.quiz-option');
+                    
+                    if (selected.value === answers[q]) {
+                        correct++;
+                        label.style.background = 'rgba(59, 109, 17, 0.15)';
+                        label.style.borderColor = 'var(--success)';
+                        label.style.borderWidth = '2px';
+                    } else {
+                        label.style.background = 'rgba(232, 75, 74, 0.15)';
+                        label.style.borderColor = '#E24B4A';
+                        label.style.borderWidth = '2px';
+                    }
+                }
+            }
+
+            const resultDiv = document.getElementById('quizResult');
+            resultDiv.classList.add('show');
+
+            if (answered === 0) {
+                resultDiv.textContent = '⚠️ Bitte beantworte erst alle Fragen!';
+                resultDiv.classList.remove('success');
+                resultDiv.classList.add('error');
+            } else if (correct === 4) {
+                resultDiv.textContent = '🎉 Perfekt! Du beherrschst die Arduino-Basics perfekt. Du bist bereit für echte Projekte!';
+                resultDiv.classList.add('success');
+                resultDiv.classList.remove('error');
+            } else {
+                const percentage = Math.round((correct / 4) * 100);
+                resultDiv.textContent = `📊 Ergebnis: ${correct}/4 Fragen richtig (${percentage}%). Schau dir die Workshops nochmal an – du schaffst es!`;
+                resultDiv.classList.remove('success');
+                resultDiv.classList.add('error');
+            }
+
+            window.scrollTo(0, resultDiv.offsetTop - 100);
+        }
+    </script>
+</body>
+</html>
